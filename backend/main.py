@@ -143,7 +143,10 @@ def create_incident(
             analysis["recommended_action"],
 
         "agent_trace":
-            analysis["agents_executed"]
+    analysis["agents_executed"],
+
+"ai_engine":
+    analysis["ai_engine"]
     }
 
 
