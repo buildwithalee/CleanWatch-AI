@@ -4,4 +4,8 @@ __pycache__/
 .env
 frontend/node_modules/
 frontend/.next/
+evidence/backend/yolo11n.pt
+backend/.yolo11n.pt.*.part
+backend/evidence/
 evidence/
+backend/yolo11n.pt

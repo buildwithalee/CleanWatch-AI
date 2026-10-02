@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import LiveCamera from "./components/LiveCamera";
+
+const API_URL = "http://127.0.0.1:8000";
 
 type AgentTrace = {
   agent: string;
@@ -9,6 +12,7 @@ type AgentTrace = {
   reason?: string;
   summary?: string;
   recommended_action?: string;
+  source?: string;
 };
 
 type Incident = {
@@ -22,10 +26,14 @@ type Incident = {
   ai_summary: string;
   recommended_action: string;
   agent_trace?: AgentTrace[];
+  ai_engine?: string;
+
+  evidence_file?: string | null;
+  detection_source?: string;
+  event_type?: string;
 };
 
 export default function Home() {
-
   const [incidents, setIncidents] =
     useState<Incident[]>([]);
 
@@ -37,61 +45,74 @@ export default function Home() {
 
 
   async function loadIncidents() {
-
     try {
-
       const response = await fetch(
-        "http://127.0.0.1:8000/incidents"
+        `${API_URL}/incidents`
       );
+
+      if (!response.ok) {
+        throw new Error(
+          "Failed to load incidents"
+        );
+      }
 
       const data = await response.json();
 
       setIncidents(data);
-
     } catch (error) {
-
-      console.error(error);
-
+      console.error(
+        "Incident loading error:",
+        error
+      );
     } finally {
-
       setLoading(false);
-
     }
   }
 
 
   async function simulateIncident() {
+    try {
+      await fetch(
+        `${API_URL}/incidents?waste_type=Plastic%20Bottle&location=Camera%2001%20-%20Demo%20Zone&confidence=91`,
+        {
+          method: "POST",
+        }
+      );
 
-    await fetch(
-      "http://127.0.0.1:8000/incidents?waste_type=Plastic%20Bottle&location=Main%20Gate&confidence=91",
-      {
-        method: "POST",
-      }
-    );
-
-    await loadIncidents();
+      await loadIncidents();
+    } catch (error) {
+      console.error(
+        "Demo incident error:",
+        error
+      );
+    }
   }
 
 
   async function resolveIncident(
     incidentId: string
   ) {
+    try {
+      await fetch(
+        `${API_URL}/incidents/${incidentId}/resolve`,
+        {
+          method: "PATCH",
+        }
+      );
 
-    await fetch(
-      `http://127.0.0.1:8000/incidents/${incidentId}/resolve`,
-      {
-        method: "PATCH",
-      }
-    );
+      setSelected(null);
 
-    setSelected(null);
-
-    await loadIncidents();
+      await loadIncidents();
+    } catch (error) {
+      console.error(
+        "Resolve incident error:",
+        error
+      );
+    }
   }
 
 
   useEffect(() => {
-
     loadIncidents();
 
     const interval = setInterval(
@@ -101,7 +122,6 @@ export default function Home() {
 
     return () =>
       clearInterval(interval);
-
   }, []);
 
 
@@ -121,7 +141,6 @@ export default function Home() {
 
 
   return (
-
     <main className="min-h-screen bg-[#050810] text-white">
 
       {/* NAVBAR */}
@@ -133,19 +152,14 @@ export default function Home() {
           <div>
 
             <h1 className="text-xl font-bold">
-
               CleanWatch{" "}
-
               <span className="text-emerald-400">
                 AI
               </span>
-
             </h1>
 
             <p className="text-xs text-gray-500">
-
               Agentic Waste Monitoring System
-
             </p>
 
           </div>
@@ -173,23 +187,17 @@ export default function Home() {
           <div>
 
             <p className="mb-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-400">
-
               AI Command Center
-
             </p>
 
             <h2 className="text-3xl font-bold">
-
               Intelligent Waste Surveillance
-
             </h2>
 
             <p className="mt-2 max-w-2xl text-gray-400">
-
               Computer vision detects suspicious waste activity.
               AI agents investigate incidents, assess severity
               and recommend actions automatically.
-
             </p>
 
           </div>
@@ -199,9 +207,7 @@ export default function Home() {
             onClick={simulateIncident}
             className="rounded-xl bg-emerald-400 px-5 py-3 font-semibold text-black transition hover:bg-emerald-300"
           >
-
             Run Demo Incident
-
           </button>
 
         </div>
@@ -234,87 +240,29 @@ export default function Home() {
         </div>
 
 
-        {/* SYSTEM */}
+        {/* CAMERA + AGENTS */}
 
         <div className="mb-8 grid gap-6 lg:grid-cols-3">
 
-          {/* CAMERA */}
-
-          <section className="rounded-2xl border border-white/10 bg-[#0b111e] p-6 lg:col-span-2">
-
-            <div className="mb-5 flex items-center justify-between">
-
-              <div>
-
-                <h3 className="font-semibold">
-                  Vision Monitoring
-                </h3>
-
-                <p className="text-sm text-gray-500">
-                  Camera 01 • Main Gate
-                </p>
-
-              </div>
-
-              <span className="rounded-lg bg-red-500/10 px-3 py-1 text-xs text-red-400">
-
-                ● LIVE
-
-              </span>
-
-            </div>
-
-
-            <div className="flex min-h-[280px] items-center justify-center rounded-xl border border-white/5 bg-black/30">
-
-              <div className="text-center">
-
-                <div className="mb-4 text-5xl">
-                  👁️
-                </div>
-
-                <p className="font-medium">
-                  YOLO Vision Engine
-                </p>
-
-                <p className="mt-2 text-sm text-gray-500">
-
-                  Person + Waste Detection
-
-                </p>
-
-                <div className="mx-auto mt-5 flex max-w-sm justify-center gap-2">
-
-                  <Badge text="Person Detection" />
-
-                  <Badge text="Waste Detection" />
-
-                  <Badge text="Event Tracking" />
-
-                </div>
-
-              </div>
-
-            </div>
-
+          <section className="lg:col-span-2">
+            <LiveCamera />
           </section>
 
-
-          {/* AGENTS */}
 
           <section className="rounded-2xl border border-emerald-500/20 bg-[#0b111e] p-6">
 
             <p className="text-xs font-semibold uppercase tracking-widest text-emerald-400">
-
               Multi-Agent Pipeline
-
             </p>
 
             <h3 className="mt-2 text-xl font-semibold">
-
               Autonomous Investigation
-
             </h3>
+
+            <p className="mt-2 text-xs text-gray-500">
+              Vision evidence is processed through specialized
+              agents before human review.
+            </p>
 
 
             <div className="mt-6 space-y-5">
@@ -322,25 +270,25 @@ export default function Home() {
               <Pipeline
                 number="01"
                 title="Evidence Agent"
-                text="Validates event evidence"
+                text="Validates detected event evidence"
               />
 
               <Pipeline
                 number="02"
                 title="Severity Agent"
-                text="Calculates incident priority"
+                text="Calculates initial incident priority"
               />
 
               <Pipeline
                 number="03"
-                title="Investigation Agent"
-                text="Analyzes incident context"
+                title="Gemini Investigation Agent"
+                text="Generates contextual AI assessment"
               />
 
               <Pipeline
                 number="04"
                 title="Response Agent"
-                text="Recommends next action"
+                text="Recommends the next action"
               />
 
             </div>
@@ -354,19 +302,28 @@ export default function Home() {
 
         <section className="rounded-2xl border border-white/10 bg-[#0b111e] p-6">
 
-          <div className="mb-6">
+          <div className="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
 
-            <h3 className="text-xl font-semibold">
+            <div>
 
-              Incident Intelligence
+              <h3 className="text-xl font-semibold">
+                Incident Intelligence
+              </h3>
 
-            </h3>
+              <p className="text-sm text-gray-500">
+                Real-time AI investigation results
+              </p>
 
-            <p className="text-sm text-gray-500">
+            </div>
 
-              Real-time AI investigation results
 
-            </p>
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+
+              <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
+
+              Auto-refreshing
+
+            </div>
 
           </div>
 
@@ -374,7 +331,7 @@ export default function Home() {
           {loading ? (
 
             <p className="text-gray-500">
-              Loading...
+              Loading incidents...
             </p>
 
           ) : incidents.length === 0 ? (
@@ -382,15 +339,11 @@ export default function Home() {
             <div className="py-12 text-center">
 
               <p className="text-gray-300">
-
                 No incidents recorded.
-
               </p>
 
               <p className="mt-2 text-sm text-gray-600">
-
-                Start the camera detector or run a demo incident.
-
+                Start live monitoring or run a demo incident.
               </p>
 
             </div>
@@ -430,6 +383,10 @@ export default function Home() {
                     </th>
 
                     <th className="pb-4">
+                      AI Engine
+                    </th>
+
+                    <th className="pb-4">
                       Action
                     </th>
 
@@ -440,61 +397,81 @@ export default function Home() {
 
                 <tbody>
 
-                  {incidents.map((incident) => (
+                  {incidents.map(
+                    (incident) => (
 
-                    <tr
-                      key={incident.id}
-                      className="border-b border-white/5 text-sm"
-                    >
+                      <tr
+                        key={incident.id}
+                        className="border-b border-white/5 text-sm"
+                      >
 
-                      <td className="py-5 font-mono text-emerald-400">
+                        <td className="py-5 font-mono text-emerald-400">
+                          {incident.id}
+                        </td>
 
-                        {incident.id}
+                        <td>
+                          {incident.waste_type}
+                        </td>
 
-                      </td>
+                        <td className="text-gray-400">
+                          {incident.location}
+                        </td>
 
-                      <td>
-                        {incident.waste_type}
-                      </td>
+                        <td>
+                          <Severity
+                            value={
+                              incident.severity
+                            }
+                          />
+                        </td>
 
-                      <td className="text-gray-400">
-                        {incident.location}
-                      </td>
+                        <td>
+                          {incident.confidence}%
+                        </td>
 
-                      <td>
+                        <td className="text-gray-400">
+                          {incident.status}
+                        </td>
 
-                        <Severity
-                          value={incident.severity}
-                        />
+                        <td>
 
-                      </td>
+                          {incident.ai_engine ===
+                          "Google Gemini" ? (
 
-                      <td>
-                        {incident.confidence}%
-                      </td>
+                            <span className="rounded-md bg-blue-500/10 px-2 py-1 text-xs text-blue-400">
+                              Gemini
+                            </span>
 
-                      <td className="text-gray-400">
-                        {incident.status}
-                      </td>
+                          ) : (
 
-                      <td>
+                            <span className="rounded-md bg-white/5 px-2 py-1 text-xs text-gray-500">
+                              {incident.ai_engine ||
+                                "Local"}
+                            </span>
 
-                        <button
-                          onClick={() =>
-                            setSelected(incident)
-                          }
-                          className="rounded-lg border border-white/10 px-3 py-2 text-xs hover:bg-white/5"
-                        >
+                          )}
 
-                          Investigate
+                        </td>
 
-                        </button>
+                        <td>
 
-                      </td>
+                          <button
+                            onClick={() =>
+                              setSelected(
+                                incident
+                              )
+                            }
+                            className="rounded-lg border border-white/10 px-3 py-2 text-xs transition hover:bg-white/5"
+                          >
+                            Investigate
+                          </button>
 
-                    </tr>
+                        </td>
 
-                  ))}
+                      </tr>
+
+                    )
+                  )}
 
                 </tbody>
 
@@ -508,37 +485,55 @@ export default function Home() {
 
 
         <footer className="py-8 text-center text-xs text-gray-600">
-
-          CleanWatch AI • Intelligent Vision + Agentic Decision System
-
+          CleanWatch AI • Computer Vision + Gemini + Agentic Decision System
         </footer>
 
       </div>
 
 
-      {/* INCIDENT MODAL */}
+      {/* INVESTIGATION MODAL */}
 
       {selected && (
 
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-5">
 
-          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-white/10 bg-[#0b111e] p-7">
+          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-white/10 bg-[#0b111e] p-7">
+
+
+            {/* MODAL HEADER */}
 
             <div className="flex items-start justify-between">
 
               <div>
 
                 <p className="font-mono text-sm text-emerald-400">
-
                   {selected.id}
-
                 </p>
 
                 <h2 className="mt-2 text-2xl font-bold">
-
                   AI Investigation
-
                 </h2>
+
+
+                <div className="mt-2 flex items-center gap-2">
+
+                  <span className="text-xs text-gray-500">
+                    AI Engine:
+                  </span>
+
+                  <span
+                    className={`rounded-md px-2 py-1 text-xs ${
+                      selected.ai_engine ===
+                      "Google Gemini"
+                        ? "bg-blue-500/10 text-blue-400"
+                        : "bg-white/5 text-gray-400"
+                    }`}
+                  >
+                    {selected.ai_engine ||
+                      "Local Fallback"}
+                  </span>
+
+                </div>
 
               </div>
 
@@ -547,15 +542,15 @@ export default function Home() {
                 onClick={() =>
                   setSelected(null)
                 }
-                className="text-xl text-gray-500"
+                className="text-xl text-gray-500 transition hover:text-white"
               >
-
                 ✕
-
               </button>
 
             </div>
 
+
+            {/* INCIDENT INFO */}
 
             <div className="mt-6 grid grid-cols-2 gap-4">
 
@@ -582,48 +577,137 @@ export default function Home() {
             </div>
 
 
+            {/* EVIDENCE */}
+
+            {selected.evidence_file && (
+
+              <div className="mt-6 rounded-xl border border-cyan-500/20 bg-black/20 p-4">
+
+                <div className="mb-4 flex items-center justify-between">
+
+                  <div>
+
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-400">
+                      Vision Evidence
+                    </p>
+
+                    <h3 className="mt-1 font-semibold text-white">
+                      Captured Incident Frame
+                    </h3>
+
+                  </div>
+
+
+                  <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs text-emerald-400">
+                    YOLO Evidence
+                  </span>
+
+                </div>
+
+
+                <div className="overflow-hidden rounded-xl border border-white/10 bg-black">
+
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+
+                  <img
+                    src={`${API_URL}/evidence/${selected.evidence_file}`}
+                    alt="CleanWatch incident evidence"
+                    className="max-h-[430px] w-full object-contain"
+                  />
+
+                </div>
+
+
+                <div className="mt-3 flex flex-col justify-between gap-2 text-xs text-gray-500 sm:flex-row">
+
+                  <span>
+                    {selected.location}
+                  </span>
+
+                  <span>
+                    {selected.timestamp}
+                  </span>
+
+                </div>
+
+              </div>
+
+            )}
+
+
+            {/* NO EVIDENCE FOR OLD/DEMO RECORD */}
+
+            {!selected.evidence_file && (
+
+              <div className="mt-6 rounded-xl border border-white/10 bg-black/20 p-4">
+
+                <p className="text-xs uppercase tracking-wider text-gray-500">
+                  Vision Evidence
+                </p>
+
+                <p className="mt-2 text-sm text-gray-400">
+                  No captured frame is available for this incident.
+                  Live YOLO-generated incidents will include evidence.
+                </p>
+
+              </div>
+
+            )}
+
+
+            {/* AI ASSESSMENT */}
+
             <div className="mt-6 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-5">
 
-              <p className="text-xs font-semibold uppercase tracking-wider text-emerald-400">
+              <div className="flex items-center justify-between">
 
-                AI Assessment
+                <p className="text-xs font-semibold uppercase tracking-wider text-emerald-400">
+                  AI Assessment
+                </p>
 
-              </p>
+
+                {selected.ai_engine ===
+                  "Google Gemini" && (
+
+                  <span className="rounded-md bg-blue-500/10 px-2 py-1 text-xs text-blue-400">
+                    Powered by Gemini
+                  </span>
+
+                )}
+
+              </div>
+
 
               <p className="mt-3 text-sm leading-6 text-gray-300">
-
                 {selected.ai_summary}
-
               </p>
 
             </div>
 
+
+            {/* RECOMMENDED ACTION */}
 
             <div className="mt-4 rounded-xl border border-white/10 p-5">
 
               <p className="text-xs uppercase text-gray-500">
-
                 Recommended Action
-
               </p>
 
-              <p className="mt-3 text-sm text-gray-300">
-
+              <p className="mt-3 text-sm leading-6 text-gray-300">
                 {selected.recommended_action}
-
               </p>
 
             </div>
 
+
+            {/* AGENT TRACE */}
 
             {selected.agent_trace && (
 
               <div className="mt-6">
 
                 <h3 className="mb-4 font-semibold">
-
                   Agent Execution Trace
-
                 </h3>
 
 
@@ -637,11 +721,24 @@ export default function Home() {
                         className="rounded-xl border border-white/10 bg-black/20 p-4"
                       >
 
-                        <p className="text-sm font-semibold text-emerald-400">
+                        <div className="flex items-center justify-between">
 
-                          {index + 1}. {agent.agent}
+                          <p className="text-sm font-semibold text-emerald-400">
+                            {index + 1}.{" "}
+                            {agent.agent}
+                          </p>
 
-                        </p>
+
+                          {agent.source && (
+
+                            <span className="text-xs text-gray-500">
+                              {agent.source}
+                            </span>
+
+                          )}
+
+                        </div>
+
 
                         <p className="mt-2 text-xs leading-5 text-gray-400">
 
@@ -664,7 +761,10 @@ export default function Home() {
             )}
 
 
-            {selected.status !== "Resolved" && (
+            {/* RESOLVE */}
+
+            {selected.status !==
+              "Resolved" && (
 
               <button
                 onClick={() =>
@@ -672,11 +772,9 @@ export default function Home() {
                     selected.id
                   )
                 }
-                className="mt-7 w-full rounded-xl bg-emerald-400 py-3 font-semibold text-black hover:bg-emerald-300"
+                className="mt-7 w-full rounded-xl bg-emerald-400 py-3 font-semibold text-black transition hover:bg-emerald-300"
               >
-
                 Mark Incident Resolved
-
               </button>
 
             )}
@@ -688,9 +786,7 @@ export default function Home() {
       )}
 
     </main>
-
   );
-
 }
 
 
@@ -701,7 +797,6 @@ function Stat({
   title: string;
   value: number;
 }) {
-
   return (
 
     <div className="rounded-2xl border border-white/10 bg-[#0b111e] p-5">
@@ -717,7 +812,6 @@ function Stat({
     </div>
 
   );
-
 }
 
 
@@ -730,15 +824,12 @@ function Pipeline({
   title: string;
   text: string;
 }) {
-
   return (
 
     <div className="flex gap-3">
 
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-xs font-bold text-emerald-400">
-
         {number}
-
       </div>
 
       <div>
@@ -756,26 +847,6 @@ function Pipeline({
     </div>
 
   );
-
-}
-
-
-function Badge({
-  text,
-}: {
-  text: string;
-}) {
-
-  return (
-
-    <span className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-gray-400">
-
-      {text}
-
-    </span>
-
-  );
-
 }
 
 
@@ -784,7 +855,6 @@ function Severity({
 }: {
   value: string;
 }) {
-
   const style =
     value === "High"
       ? "bg-red-500/10 text-red-400"
@@ -797,13 +867,10 @@ function Severity({
     <span
       className={`rounded-md px-2 py-1 text-xs ${style}`}
     >
-
       {value}
-
     </span>
 
   );
-
 }
 
 
@@ -814,7 +881,6 @@ function Info({
   label: string;
   value: string;
 }) {
-
   return (
 
     <div className="rounded-xl border border-white/10 p-4">
@@ -830,5 +896,4 @@ function Info({
     </div>
 
   );
-
 }
