@@ -1,0 +1,62 @@
+[
+    {
+        "id": "CW-68D9BA",
+        "waste_type": "Bottle",
+        "location": "Camera 01 - Main Gate",
+        "severity": "Low",
+        "status": "AI Investigated",
+        "confidence": 54,
+        "timestamp": "2026-10-02 16:21:39",
+        "ai_summary": "A possible illegal waste disposal event involving Bottle was detected at Camera 01 - Main Gate. The visual detection confidence is 54%.",
+        "recommended_action": "Continue monitoring Camera 01 - Main Gate and review the event if similar activity occurs again.",
+        "agent_trace": [
+            {
+                "agent": "Evidence Agent",
+                "result": "Bottle activity detected at Camera 01 - Main Gate with 54% confidence."
+            },
+            {
+                "agent": "Severity Agent",
+                "severity": "Low",
+                "reason": "Severity classified as Low based on detection confidence and waste activity."
+            },
+            {
+                "agent": "Investigation Agent",
+                "summary": "A possible illegal waste disposal event involving Bottle was detected at Camera 01 - Main Gate. The visual detection confidence is 54%."
+            },
+            {
+                "agent": "Response Agent",
+                "recommended_action": "Continue monitoring Camera 01 - Main Gate and review the event if similar activity occurs again."
+            }
+        ]
+    },
+    {
+        "id": "CW-AC43C7",
+        "waste_type": "Plastic Bottle",
+        "location": "Main Gate",
+        "severity": "High",
+        "status": "AI Investigated",
+        "confidence": 91,
+        "timestamp": "2026-10-02 16:07:40",
+        "ai_summary": "A possible illegal waste disposal event involving Plastic Bottle was detected at Main Gate. The visual detection confidence is 91%.",
+        "recommended_action": "Immediately inspect Main Gate, preserve the evidence, and dispatch the cleanup team.",
+        "agent_trace": [
+            {
+                "agent": "Evidence Agent",
+                "result": "Plastic Bottle activity detected at Main Gate with 91% confidence."
+            },
+            {
+                "agent": "Severity Agent",
+                "severity": "High",
+                "reason": "Severity classified as High based on detection confidence and waste activity."
+            },
+            {
+                "agent": "Investigation Agent",
+                "summary": "A possible illegal waste disposal event involving Plastic Bottle was detected at Main Gate. The visual detection confidence is 91%."
+            },
+            {
+                "agent": "Response Agent",
+                "recommended_action": "Immediately inspect Main Gate, preserve the evidence, and dispatch the cleanup team."
+            }
+        ]
+    }
+]
