@@ -47,8 +47,13 @@ export default function Home() {
   async function loadIncidents() {
     try {
       const response = await fetch(
-        `${API_URL}/incidents`
-      );
+  `${API_URL}/incidents`,
+  {
+    headers: {
+      "ngrok-skip-browser-warning": "true",
+    },
+  }
+);
 
       if (!response.ok) {
         throw new Error(
@@ -75,8 +80,11 @@ export default function Home() {
       await fetch(
         `${API_URL}/incidents?waste_type=Plastic%20Bottle&location=Camera%2001%20-%20Demo%20Zone&confidence=91`,
         {
-          method: "POST",
-        }
+  method: "POST",
+  headers: {
+    "ngrok-skip-browser-warning": "true",
+  },
+}
       );
 
       await loadIncidents();
@@ -95,9 +103,12 @@ export default function Home() {
     try {
       await fetch(
         `${API_URL}/incidents/${incidentId}/resolve`,
-        {
-          method: "PATCH",
-        }
+       {
+  method: "PATCH",
+  headers: {
+    "ngrok-skip-browser-warning": "true",
+  },
+}
       );
 
       setSelected(null);

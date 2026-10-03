@@ -103,12 +103,15 @@ export default function LiveCamera() {
       );
 
       const response = await fetch(
-        "https://overplay-saline-escargot.ngrok-free.dev/detect-frame",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+  "https://overplay-saline-escargot.ngrok-free.dev/detect-frame",
+  {
+    method: "POST",
+    headers: {
+      "ngrok-skip-browser-warning": "true",
+    },
+    body: formData,
+  }
+);
 
       if (!response.ok) {
         throw new Error(
