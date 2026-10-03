@@ -103,7 +103,7 @@ export default function LiveCamera() {
       );
 
       const response = await fetch(
-        "http://127.0.0.1:8000/detect-frame",
+        "https://overplay-saline-escargot.ngrok-free.dev/detect-frame",
         {
           method: "POST",
           body: formData,

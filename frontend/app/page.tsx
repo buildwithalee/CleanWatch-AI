@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import LiveCamera from "./components/LiveCamera";
 
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = "https://overplay-saline-escargot.ngrok-free.dev";
 
 type AgentTrace = {
   agent: string;
