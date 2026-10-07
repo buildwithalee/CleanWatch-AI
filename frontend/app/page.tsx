@@ -496,7 +496,7 @@ export default function Home() {
 
 
         <footer className="py-8 text-center text-xs text-gray-600">
-          CleanWatch AI • Computer Vision + Gemini + Agentic Decision System
+          CleanStreets AI • Computer Vision + Gemini + Agentic Decision System
         </footer>
 
       </div>
